@@ -1,10 +1,5 @@
-//
-//  GraphView.swift
-//  Coachwa
-//
-//  Created by hyonsoo han on 2020/11/09.
-//  Copyright © 2020 batontouch. All rights reserved.
-//
+// The Swift Programming Language
+// https://docs.swift.org/swift-book
 
 import SwiftUI
 
@@ -15,39 +10,36 @@ struct GraphValue {
 }
 
 
-struct GraphView<Head: View>: View {
+struct HHLineGraphView: View {
 
-    private let kGraphHeight: CGFloat = 240
-    private var values: [GraphValue] = []
-    private var headView: Head?
     private let kPaddingHorizontal:CGFloat = 25
     private let kPaddingVertical:CGFloat = 20
-    
     private let kValueMaxCount = GraphValue.ValueMaxCount
+    let graphHeight: CGFloat
+    let padding: EdgeInsets
+    private var values: [GraphValue] = []
     
-    init(values: [GraphValue], headView: (() -> Head)?) {
+    init(values: [GraphValue],
+         graphHeight: CGFloat = 240,
+         pading: EdgeInsets = .init(top: 20, leading: 25, bottom: 20, trailing: 25)) {
         self.values = Array(values.suffix(kValueMaxCount))
-        self.headView = headView?()
+        self.graphHeight = max(240, graphHeight)
+        self.padding = pading
     }
     
     var body: some View {
-            VStack(alignment: .leading, spacing: 25) {
-                if headView != nil {
-                    headView!
-                }
-                ZStack {
-                    GeometryReader { reader in
-                        Graph(data: self.values,
-                              frame: .constant(
-                                CGRect(
-                                    x: 0, y: 0,
-                                    width: reader.frame(in: .local).width,
-                                    height: reader.frame(in: .local).height))
-                        ).offset(x: 0, y: 0)
-                    }.frame(height: kGraphHeight)
-                }
-            }.padding(.horizontal, kPaddingHorizontal)
-            .padding(.vertical, kPaddingVertical)
+        ZStack {
+            GeometryReader { reader in
+                Graph(data: self.values,
+                      frame: .constant(
+                        CGRect(
+                            x: 0, y: 0,
+                            width: reader.frame(in: .local).width,
+                            height: reader.frame(in: .local).height))
+                ).offset(x: 0, y: 0)
+            }.frame(height: graphHeight)
+        }
+        .padding(padding)
     }
     
 }
@@ -86,6 +78,11 @@ struct Graph: View {
     private var matrixHeight: CGFloat {
         return frame.size.height - kLabelHeight
     }
+    
+    var body: some View {
+        self.chart.frame(minWidth: 100, minHeight: 100)
+    }
+    
     /// 등고선 단위 계산
     /// - Returns: (등고선 단위 높이 point, 단위 value, 등고선 갯수)
     private func calculateStepHeightAndValue(values: [Double]) -> HeightInfo {
@@ -209,12 +206,12 @@ struct Graph: View {
         }
         
         return ZStack {
-            path.stroke(Color(.slate_grey).opacity(0.7), style: StrokeStyle())
+            path.stroke(Color(.systemGray).opacity(0.7), style: StrokeStyle())
                 .drawingGroup()
             ForEach(altitudes, id:\.self) { it in
                 Text(it.text)
                     .font(.system(size: 12, weight: .bold))
-                    .foregroundColor(Color(.periwinkle).opacity(0.7))
+                    .foregroundColor(Color.secondary.opacity(0.7))
                     .position(x: 0, y: it.high)
                     .id(it.hashValue)
             }
@@ -243,12 +240,12 @@ struct Graph: View {
             .map { ValueLineLabel(offset: $0.offset, text: $0.element) }
         
         return ZStack {
-            path.stroke(Color(.slate_grey).opacity(0.7), style: StrokeStyle())
+            path.stroke(Color(.systemGray).opacity(0.7), style: StrokeStyle())
             
             ForEach(values, id: \.offset) { it in
                 Text(it.text ?? "")
                     .font(.system(size: 12, weight: .bold))
-                    .foregroundColor(Color(.periwinkle).opacity(0.7))
+                    .foregroundColor(Color(.systemPurple).opacity(0.7))
                     .position(
                         x: kLabelValueWidth  + kLeadingDotMargin + (step.x * CGFloat(it.offset)),
                         y: frame.height - 12)
@@ -272,41 +269,72 @@ struct Graph: View {
             
             valueLine(step: step, labels: labels)
                 
-            if peaks.isNotEmpty {
+            if !peaks.isEmpty {
                 lineChart(step: step, points: peaks)
-                    .fill(LinearGradient(gradient: Gradient(colors: [Color(.strong_pink).opacity(0.56), Color(.dark).opacity(0.56)]), startPoint: .top, endPoint: .bottom))
+                    .fill(LinearGradient(gradient: Gradient(colors: [Color(.systemPink).opacity(0.56), Color(.darkGray).opacity(0.56)]), startPoint: .top, endPoint: .bottom))
                     .drawingGroup()
                 
                 lineDot(points: peaks)
-                    .foregroundColor(Color(.strong_pink))
+                    .foregroundColor(Color(.systemPink))
                     .drawingGroup()
             }
         }
     }
     
-    var body: some View {
-        self.chart.frame(minWidth: 100, minHeight: 100)
+    
+}
+
+fileprivate extension Double {
+    func nearInt() -> Int {
+        return Int(self + 0.5)
     }
 }
+
+fileprivate extension Int {
+    func toDouble() -> Double {
+        return Double(self)
+    }
+}
+
+// MARK: - Preview
 
 
 struct GraphView_Previews: PreviewProvider {
     static var previews: some View {
-        GraphView(values: [
-            GraphValue(value: 58, label: "4.12"),
-            GraphValue(value: 54.6, label: "4.17"),
-            GraphValue(value: 53.7, label: "4.21"),
-            GraphValue(value: 52.5, label: "4.22"),
-            GraphValue(value: 53.8, label: "4.25"),
-            GraphValue(value: 57, label: "4.27"),
-        ], headView: {
-            HStack {
+        VStack(alignment: .leading, spacing: 0) {
+            HStack(alignment: .center) {
                 Rectangle().frame(width: 36, height: 36, alignment: .center)
                     .cornerRadius(18).foregroundColor(.yellow)
                 Text("님의 몸무게").foregroundColor(Color.white)
                 Spacer()
             }
-        }).background(Color(.dark))
-        
+            .padding(20)
+            .background(Color.black)
+            
+            HHLineGraphView(values: [
+                GraphValue(value: 58, label: "4.12"),
+                GraphValue(value: 54.6, label: "4.17"),
+                GraphValue(value: 53.7, label: "4.21"),
+                GraphValue(value: 52.5, label: "4.22"),
+                GraphValue(value: 53.8, label: "4.25"),
+                GraphValue(value: 57, label: "4.27"),
+                GraphValue(value: 57, label: "4.28"),
+            ])
+        }
+        .background(backgroundColor)
+    }
+    
+    static var backgroundColor: Color {
+    #if os(iOS)
+        return Color(UIColor.systemBackground)
+    #else
+        return Color(nsColor: NSColor(name: nil) { appearance in
+            switch appearance.name {
+            case .darkAqua: return .black
+            default:
+                return .white
+            }
+        })
+    #endif
     }
 }
