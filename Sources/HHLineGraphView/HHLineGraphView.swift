@@ -340,33 +340,9 @@ fileprivate extension Int {
 
 // MARK: - Preview
 
-
-struct GraphView_Previews: PreviewProvider {
-    static var previews: some View {
-        VStack(alignment: .leading, spacing: 0) {
-            HStack(alignment: .center) {
-                Rectangle().frame(width: 36, height: 36, alignment: .center)
-                    .cornerRadius(18).foregroundColor(.yellow)
-                Text("님의 몸무게").foregroundColor(Color.white)
-                Spacer()
-            }
-            .padding(20)
-            .background(Color.black)
-            
-            HHLineGraphView(values: [
-                GraphValue(value: 58, label: "4.12"),
-                GraphValue(value: 54.6, label: "4.17"),
-                GraphValue(value: 53.7, label: "4.21"),
-                GraphValue(value: 52.5, label: "4.22"),
-                GraphValue(value: 53.8, label: "4.25"),
-                GraphValue(value: 57, label: "4.27"),
-                GraphValue(value: 60, label: "4.28"),
-            ])
-        }
-        .background(backgroundColor)
-    }
+#Preview("") {
     
-    static var backgroundColor: Color {
+    var backgroundColor: Color {
     #if os(iOS)
         return Color(UIColor.systemBackground)
     #else
@@ -379,4 +355,33 @@ struct GraphView_Previews: PreviewProvider {
         })
     #endif
     }
+    
+    var titleColor: Color {
+        #if os(iOS)
+        return Color(UIColor.label)
+        #else
+        return Color(NSColor.headerTextColor)
+        #endif
+    }
+    
+    return VStack(alignment: .leading, spacing: 0) {
+        HStack(alignment: .center) {
+            Circle().frame(width: 36, height: 36, alignment: .center).foregroundColor(.yellow)
+            Text("님의 몸무게").foregroundColor(titleColor)
+            Spacer()
+        }
+        .padding(20)
+        .background(backgroundColor)
+        
+        HHLineGraphView(values: [
+            GraphValue(value: 58, label: "4.12"),
+            GraphValue(value: 54.6, label: "4.17"),
+            GraphValue(value: 53.7, label: "4.21"),
+            GraphValue(value: 52.5, label: "4.22"),
+            GraphValue(value: 53.8, label: "4.25"),
+            GraphValue(value: 57, label: "4.27"),
+            GraphValue(value: 60, label: "4.28"),
+        ])
+    }
+    .background(backgroundColor)
 }
